@@ -34,7 +34,7 @@ foreach ($Driver in $dismDrivers ) {
                        break
                      }
         'DriverDate' { 
-                     $tmp = $txt.split( '.' )
+                     $tmp = $txt.split( '/' )
                      $txt = "$($tmp[2]).$($tmp[1]).$($tmp[0].Trim())"
                      $Date = $txt
                      $Operation = 'DriverVersion'
@@ -70,7 +70,7 @@ if($NotUnique.count -eq 0){
     exit 0
     }
 
-$NotUnique | Sort-Object FileName | ft
+$NotUnique | Sort-Object FileName | format-table
 # search for duplicate drivers 
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
 $ToDelete = @()
@@ -90,5 +90,7 @@ foreach ( $DeleteDriver in $ToDelete ) {
     if($Action){
       Write-Output "pnputil.exe /remove-device  $Name"
       Invoke-Expression -Command "pnputil.exe /remove-device $Name"
+      Write-Output "pnputil.exe /delete-driver $Name /uninstall /force"
+      Invoke-Expression -Command "pnputil.exe /delete-driver $Name /uninstall /force"
     }
 }
