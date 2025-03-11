@@ -1,7 +1,8 @@
 # Use this PowerShell script to find and remove old and unused device drivers from the Windows Driver Store
 # Explanation: http://woshub.com/how-to-remove-unused-drivers-from-driver-store/
+# Action = true is removing the drivers?  
 param (
-  [switch] $Action = $false
+  [boolean] $Action = $true
 )
 
 $dismDrivers = dism /online /get-drivers
@@ -74,20 +75,20 @@ $NotUnique | Sort-Object FileName | ft
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
 $ToDelete = @()
 foreach ( $Driver in $DriverList ) {
-    Write-Output "Duplicate driver found" -ForegroundColor Yellow
+    Write-Output "Duplicate driver found" 
     $Select = $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object date -Descending | Select-Object -Skip 1
     $Select | Format-Table
     $ToDelete += $Select
 }
-Write-Output "List of driver version  to remove:" -ForegroundColor Red
+Write-Output "List of driver version  to remove:" 
 $ToDelete | format-Table
 # Removing old driver versions
 
 foreach ( $DeleteDriver in $ToDelete ) {
     $Name = $($DeleteDriver.Name).Trim()
-    Write-Output "Flagged for deletion: $Name" -ForegroundColor Yellow
-    if($Action){ß
-      Write-Output "pnputil.exe /remove-device  $Name" -ForegroundColor Yellow
+    Write-Output "Flagged for deletion: $($DeleteDriver.Vendor) $($DeleteDriver.FileName) $($DeleteDriver.Version)" 
+    if($Action){
+      Write-Output "pnputil.exe /remove-device  $Name"
       Invoke-Expression -Command "pnputil.exe /remove-device $Name"
     }
 }
