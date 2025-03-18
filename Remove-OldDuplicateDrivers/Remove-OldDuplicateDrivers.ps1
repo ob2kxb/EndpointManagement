@@ -75,10 +75,27 @@ $NotUnique | Sort-Object FileName | format-table
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
 $ToDelete = @()
 foreach ( $Driver in $DriverList ) {
-    Write-Output "Duplicate driver found" 
-    $Select = $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object date -Descending | Select-Object -Skip 1
-    $Select | Format-Table
-    $ToDelete += $Select
+  Write-Output "Duplicate driver found"
+  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -first 1 | foreach-object{
+      [pscustomobject]@{
+          Action = 'Current'
+          FileName = ($_.FileName).trim()
+          Name = ($_.Name).trim()
+          Date = $_.Date
+          Vendor = $_.Vendor
+          Version = $_.Version
+      }
+  }
+  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -Skip 1 | foreach-object {
+      [pscustomobject]@{
+          Action = 'Delete'
+          FileName = ($_.FileName).trim()
+          Name = ($_.Name).trim()
+          Date = $_.Date
+          Vendor = $_.Vendor
+          Version = $_.Version
+      }
+  }
 }
 Write-Output "List of driver version  to remove:" 
 $ToDelete | format-Table
