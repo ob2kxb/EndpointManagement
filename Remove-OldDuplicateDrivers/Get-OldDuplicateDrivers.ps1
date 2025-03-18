@@ -60,11 +60,11 @@ foreach ( $Driver in $($Drivers | sort Filename) ) {
 }
 if($NotUnique.count -eq 0){
     write-Output "No duplicates detected"
-    #exit 0
+    exit 0
     }
 else {
     write-Output "Duplicates detected"
-    #exit 1
+    exit 1
 }
 
 
