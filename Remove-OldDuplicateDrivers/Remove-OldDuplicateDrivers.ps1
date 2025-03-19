@@ -70,6 +70,11 @@ if($NotUnique.count -eq 0){
     exit 0
     }
 
+    $Drivers | ForEach-Object {
+      $_ | Add-Member -MemberType NoteProperty -Name DateParsed -Value ([datetime]::ParseExact($_.Date, "yyyy.d.M", $null))
+  }
+    
+
 $NotUnique | Sort-Object FileName | format-table
 # search for duplicate drivers 
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
