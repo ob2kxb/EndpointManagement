@@ -79,7 +79,7 @@ $NotUnique | Sort-Object FileName | format-table
 # search for duplicate drivers 
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
 $ToDelete = @()
-foreach ( $Driver in $DriverList ) {
+foreach ( $DeleteDriver in ($ToDelete | Where-Object 'Action' -eq 'Delete') ) {
   Write-Output "Duplicate driver found"
   $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -first 1 | foreach-object{
       [pscustomobject]@{
