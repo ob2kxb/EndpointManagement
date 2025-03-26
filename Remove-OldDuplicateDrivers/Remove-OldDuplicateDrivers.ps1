@@ -61,7 +61,7 @@ foreach ($Driver in $dismDrivers ) {
 }
 $last = ''
 $NotUnique = @()
-foreach ( $Driver in $($Drivers | sort Filename) ) {
+ForEach ( $Driver in $($Drivers | sort Filename) ) {
     if ($Driver.FileName -eq $last  ) {  $NotUnique += $Driver  }
     $last = $Driver.FileName
 }
@@ -69,9 +69,11 @@ if($NotUnique.count -eq 0){
     write-Output "No duplicates detected"
     exit 0
 }
-
+$culture = [System.Globalization.CultureInfo]::InvariantCulture
 $Drivers | ForEach-Object {
-    $_ | Add-Member -MemberType NoteProperty -Name DateParsed -Value ([datetime]::ParseExact($_.Date, "yyyy.d.M", $null))
+  $_.Date
+  $_.Name
+    $_ | Add-Member -MemberType NoteProperty -Name DateParsed -Value ([datetime]::ParseExact($_.Date, "yyyy.d.M", $culture))
 }
   
 
@@ -79,9 +81,9 @@ $NotUnique | Sort-Object FileName | format-table
 # search for duplicate drivers 
 $DriverList = $NotUnique | select-object -ExpandProperty FileName -Unique
 $ToDelete = @()
-foreach ( $Driver in $DriverList ) {
+ForEach ( $Driver in $DriverList ) {
   Write-Output "Duplicate driver found"
-  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -first 1 | foreach{
+  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -first 1 | ForEach-Object{
       [pscustomobject]@{
           Action = 'Current'
           FileName = ($_.FileName).trim()
@@ -91,7 +93,7 @@ foreach ( $Driver in $DriverList ) {
           Version = $_.Version
       }
   }
-  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -Skip 1 | foreach {
+  $ToDelete += $Drivers | Where-Object { $_.FileName -eq $Driver } | Sort-Object DateParsed -Descending | Select-Object -Skip 1 | ForEach-Object{
       [pscustomobject]@{
           Action = 'Delete'
           FileName = ($_.FileName).trim()
@@ -106,13 +108,13 @@ Write-Output "List of driver version  to remove:"
 $ToDelete | format-Table
 # Removing old driver versions
 
-foreach ( $DeleteDriver in ($ToDelete | Where-Object 'Action' -eq 'Delete') ) {
+foreach($DeleteDriver in ($ToDelete | Where-Object 'Action' -eq 'Delete')) {
     $Name = $($DeleteDriver.Name).Trim()
     Write-Output "Flagged for deletion: $($DeleteDriver.Vendor) $($DeleteDriver.FileName) $($DeleteDriver.Version)" 
     if($Action){
       Write-Output "pnputil.exe /delete-driver $Name /uninstall /force"
-      Invoke-Expression -Command "pnputil.exe /delete-driver $Name /uninstall /force"
+      #Invoke-Expression -Command "pnputil.exe /delete-driver $Name /uninstall /force"
     }
-}
+} 
 
 return $ToDelete | Where-Object 'Action' -eq 'Delete'
