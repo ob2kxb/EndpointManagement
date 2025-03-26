@@ -71,9 +71,7 @@ if($NotUnique.count -eq 0){
 }
 $culture = [System.Globalization.CultureInfo]::InvariantCulture
 $Drivers | ForEach-Object {
-  $_.Date
-  $_.Name
-    $_ | Add-Member -MemberType NoteProperty -Name DateParsed -Value ([datetime]::ParseExact($_.Date, "yyyy.d.M", $culture))
+    $_ | Add-Member -MemberType NoteProperty -Name DateParsed -Value ([datetime]::ParseExact($_.Date, "yyyy.MM.d", $culture))
 }
   
 
@@ -113,7 +111,7 @@ foreach($DeleteDriver in ($ToDelete | Where-Object 'Action' -eq 'Delete')) {
     Write-Output "Flagged for deletion: $($DeleteDriver.Vendor) $($DeleteDriver.FileName) $($DeleteDriver.Version)" 
     if($Action){
       Write-Output "pnputil.exe /delete-driver $Name /uninstall /force"
-      #Invoke-Expression -Command "pnputil.exe /delete-driver $Name /uninstall /force"
+      Invoke-Expression -Command "pnputil.exe /delete-driver $Name /uninstall /force"
     }
 } 
 
